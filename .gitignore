@@ -3,6 +3,9 @@
 .vscode/
 .idea/
 
+# Vercel
+.vercel/
+
 # OS
 Thumbs.db
 ehthumbs.db
