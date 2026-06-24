@@ -1,11 +1,23 @@
 /* =============================================================================
  *  app.js  —  UI 와이어링: 입력 → 계산 → 결과/표/차트 렌더링
+ *  디자인: Montage (WDS) · 탭: 예금 / 적금 / 연금 / 투자 / 대출
  * ========================================================================== */
 'use strict';
 
-const C = { rate: '#5e35b1', bond: '#00897b', stock: '#e65100', sum: '#2e7d32', gold: '#f4b400' };
+/* Montage accent 팔레트 (차트 공용) */
+const C = {
+  rate: '#5B37ED',   // violet-45 (금리형)
+  bond: '#009632',   // green-40  (채권형)
+  stock: '#D17600',  // orange-39 (주식형)
+  sum: '#0066FF',    // blue-50   (합계/Primary)
+  asset: '#0066FF',  // 연금 자산
+  gold: '#FF9200'    // orange-50 (강조)
+};
 
-/* ── 탭 전환 ──────────────────────────────────────────────────────────── */
+let investSub = 'quick';  // 투자 탭 활성 서브패널
+let loanMode = 'amort';   // 대출 상환 방식
+
+/* ── 메인 탭 전환 ─────────────────────────────────────────────────────── */
 document.querySelectorAll('nav.tabs button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
@@ -16,20 +28,30 @@ document.querySelectorAll('nav.tabs button').forEach(btn => {
   });
 });
 
-/* ── 대출 서브탭 전환 ─────────────────────────────────────────────────── */
-let loanMode = 'amort';
-document.querySelectorAll('.subtabs button').forEach(btn => {
+/* ── 투자 탭 서브패널 전환 ────────────────────────────────────────────── */
+document.querySelectorAll('#tab-invest .subtabs button').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.subtabs button').forEach(b => b.classList.remove('active'));
+    investSub = btn.dataset.sub;
+    document.querySelectorAll('#tab-invest .subtabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#tab-invest .sub-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector('#tab-invest .sub-panel[data-sub="' + investSub + '"]').classList.add('active');
+    recomputeAll();
+  });
+});
+
+/* ── 대출 상환방식 전환 ───────────────────────────────────────────────── */
+document.querySelectorAll('#tab-loan .subtabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#tab-loan .subtabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loanMode = btn.dataset.sub;
-    // 거치 입력은 만기일시에서 숨김 (원본에서도 미반영)
     document.getElementById('ln_grace_field').style.display = loanMode === 'bullet' ? 'none' : '';
     renderLoan();
   });
 });
 
-/* ── 세금 비교 표 렌더링 (예금/적금 공통) ─────────────────────────────── */
+/* ── 세금 비교 표 (예금/적금 공통) ────────────────────────────────────── */
 function renderTaxTable(prefix, tax) {
   const box = document.querySelector(`.taxbox[data-prefix="${prefix}"]`);
   if (!box) return;
@@ -49,85 +71,93 @@ function renderTaxTable(prefix, tax) {
     </div>`;
 }
 
-/* ── 종합 계산기 ─────────────────────────────────────────────────────── */
-function renderMain() {
-  // 1) 미래가치
-  {
-    const pv = val('fv_pv'), rate = valPct('fv_rate'), years = val('fv_years');
-    const r = calcFutureValue({ pv, rate, years });
-    document.getElementById('fv_out').textContent = won(r.result);
-    document.getElementById('fv_sentence').innerHTML =
-      `현재 <b>${won(pv)}</b>이 매년 <b>${pct(rate)}</b>의 수익률로 <b>${num(years)}년</b> 뒤에는 <b>${won(r.result)}</b>이 됩니다.`;
-  }
-  // 2) 현재가치
-  {
-    const fv = val('pv_fv'), rate = valPct('pv_rate'), years = val('pv_years');
-    const r = calcPresentValue({ fv, rate, years });
-    document.getElementById('pv_out').textContent = won(r.result);
-    document.getElementById('pv_sentence').innerHTML =
-      `매년 <b>${pct(rate)}</b> 수익 가정 시, <b>${num(years)}년</b> 뒤의 <b>${won(fv)}</b>는 현재가치로 <b>${won(r.result)}</b>입니다.`;
-  }
-  // 3) 목돈 모으기
-  {
-    const target = val('tg_target'), months = val('tg_months'), rate = valPct('tg_rate');
-    const r = calcTargetSaving({ target, months, rate });
-    document.getElementById('tg_out').innerHTML = won(r.monthly) + ' <small>/ 월</small>';
-    document.getElementById('tg_sentence').innerHTML =
-      `<b>${won(target)}</b>을 <b>${num(months)}개월</b> 동안 연 <b>${pct(rate)}</b> 수익률로 모으려면 매월 <b>${won(r.monthly)}</b>씩 적립해야 합니다.`;
-  }
-  // 4) 예금 월복리
-  {
-    const r = calcDepositCompound({ principal: val('dc_principal'), months: val('dc_months'), rate: valPct('dc_rate'), inflation: valPct('dc_inf') });
-    document.getElementById('dc_total').textContent = won(r.total);
-    document.getElementById('dc_p').textContent = won(r.principal);
-    document.getElementById('dc_i').textContent = won(r.interest);
-    renderTaxTable('dc', r.tax);
-  }
-  // 5) 예금 연단리
-  {
-    const r = calcDepositSimple({ principal: val('ds_principal'), months: val('ds_months'), rate: valPct('ds_rate'), inflation: valPct('ds_inf') });
-    document.getElementById('ds_total').textContent = won(r.total);
-    document.getElementById('ds_p').textContent = won(r.principal);
-    document.getElementById('ds_i').textContent = won(r.interest);
-    renderTaxTable('ds', r.tax);
-  }
-  // 6) 적금 월복리
-  {
-    const r = calcInstallmentCompound({ monthly: val('ic_monthly'), months: val('ic_months'), rate: valPct('ic_rate'), inflation: valPct('ic_inf') });
-    document.getElementById('ic_total').textContent = won(r.total);
-    document.getElementById('ic_d').textContent = won(r.deposit);
-    document.getElementById('ic_i').textContent = won(r.interest);
-    renderTaxTable('ic', r.tax);
-  }
-  // 7) 적금 연단리
-  {
-    const r = calcInstallmentSimple({ monthly: val('is_monthly'), months: val('is_months'), rate: valPct('is_rate'), inflation: valPct('is_inf') });
-    document.getElementById('is_total').textContent = won(r.total);
-    document.getElementById('is_d').textContent = won(r.deposit);
-    document.getElementById('is_i').textContent = won(r.interest);
-    renderTaxTable('is', r.tax);
-  }
+/* ── 예금 ─────────────────────────────────────────────────────────────── */
+function renderDeposit() {
+  const dc = calcDepositCompound({ principal: val('dc_principal'), months: val('dc_months'), rate: valPct('dc_rate'), inflation: valPct('dc_inf') });
+  document.getElementById('dc_total').textContent = won(dc.total);
+  document.getElementById('dc_p').textContent = won(dc.principal);
+  document.getElementById('dc_i').textContent = won(dc.interest);
+  renderTaxTable('dc', dc.tax);
+
+  const ds = calcDepositSimple({ principal: val('ds_principal'), months: val('ds_months'), rate: valPct('ds_rate'), inflation: valPct('ds_inf') });
+  document.getElementById('ds_total').textContent = won(ds.total);
+  document.getElementById('ds_p').textContent = won(ds.principal);
+  document.getElementById('ds_i').textContent = won(ds.interest);
+  renderTaxTable('ds', ds.tax);
+}
+
+/* ── 적금 ─────────────────────────────────────────────────────────────── */
+function renderSavings() {
+  const ic = calcInstallmentCompound({ monthly: val('ic_monthly'), months: val('ic_months'), rate: valPct('ic_rate'), inflation: valPct('ic_inf') });
+  document.getElementById('ic_total').textContent = won(ic.total);
+  document.getElementById('ic_d').textContent = won(ic.deposit);
+  document.getElementById('ic_i').textContent = won(ic.interest);
+  renderTaxTable('ic', ic.tax);
+
+  const is = calcInstallmentSimple({ monthly: val('is_monthly'), months: val('is_months'), rate: valPct('is_rate'), inflation: valPct('is_inf') });
+  document.getElementById('is_total').textContent = won(is.total);
+  document.getElementById('is_d').textContent = won(is.deposit);
+  document.getElementById('is_i').textContent = won(is.interest);
+  renderTaxTable('is', is.tax);
+}
+
+/* ── 빠른 계산 (미래가치 / 현재가치 / 목돈모으기) ─────────────────────── */
+function renderQuick() {
+  const pv = val('fv_pv'), fvRate = valPct('fv_rate'), fvYears = val('fv_years');
+  const fv = calcFutureValue({ pv, rate: fvRate, years: fvYears });
+  document.getElementById('fv_out').textContent = won(fv.result);
+  document.getElementById('fv_sentence').innerHTML =
+    `현재 <b>${won(pv)}</b>이 매년 <b>${pct(fvRate)}</b>의 수익률로 <b>${num(fvYears)}년</b> 뒤에는 <b>${won(fv.result)}</b>이 됩니다.`;
+
+  const fvv = val('pv_fv'), pvRate = valPct('pv_rate'), pvYears = val('pv_years');
+  const pvr = calcPresentValue({ fv: fvv, rate: pvRate, years: pvYears });
+  document.getElementById('pv_out').textContent = won(pvr.result);
+  document.getElementById('pv_sentence').innerHTML =
+    `매년 <b>${pct(pvRate)}</b> 수익 가정 시, <b>${num(pvYears)}년</b> 뒤의 <b>${won(fvv)}</b>는 현재가치로 <b>${won(pvr.result)}</b>입니다.`;
+
+  const target = val('tg_target'), tgMonths = val('tg_months'), tgRate = valPct('tg_rate');
+  const tg = calcTargetSaving({ target, months: tgMonths, rate: tgRate });
+  document.getElementById('tg_out').innerHTML = won(tg.monthly) + ' <small>/ 월</small>';
+  document.getElementById('tg_sentence').innerHTML =
+    `<b>${won(target)}</b>을 <b>${num(tgMonths)}개월</b> 동안 연 <b>${pct(tgRate)}</b> 수익률로 모으려면 매월 <b>${won(tg.monthly)}</b>씩 적립해야 합니다.`;
+}
+
+/* ── 연금 ─────────────────────────────────────────────────────────────── */
+function renderPension() {
+  const r = calcPension({
+    initial: val('pn_initial'), monthly: val('pn_monthly'),
+    accumYears: val('pn_accum_years'), accumRate: valPct('pn_accum_rate'),
+    payoutYears: val('pn_payout_years'), payoutRate: valPct('pn_payout_rate'),
+    inflation: valPct('pn_inf')
+  });
+  document.getElementById('pn_nest').textContent = won(r.nest);
+  document.getElementById('pn_payout').innerHTML = won(r.monthlyPayout) + ' <small>/ 월</small>';
+  document.getElementById('pn_contrib').textContent = won(r.contributed);
+  document.getElementById('pn_profit').textContent = won(r.accumProfit);
+  document.getElementById('pn_total').textContent = won(r.totalPayout);
+  document.getElementById('pn_interest_only').innerHTML = won(r.interestOnly) + ' <small>/ 월</small>';
+  document.getElementById('pn_real').textContent = won(r.realFirstPayout);
+  document.getElementById('pn_sentence').innerHTML =
+    `매월 <b>${won(val('pn_monthly'))}</b>씩 <b>${num(val('pn_accum_years'))}년</b> 모으면 은퇴 시 <b>${won(r.nest)}</b>, 이후 <b>${num(val('pn_payout_years'))}년</b> 동안 매월 <b>${won(r.monthlyPayout)}</b>씩 받을 수 있습니다.`;
+
+  lineChart(document.getElementById('pn_chart'), [
+    { name: '예상 자산', color: C.asset, data: r.timeline.map(x => x.value) }
+  ], { xlabels: r.timeline.map(x => x.label), yfmt: v => Math.round(v / 10000).toLocaleString('ko-KR') + '만' });
 }
 
 /* ── 월지급식 펀드 ───────────────────────────────────────────────────── */
 function renderFund() {
   const years = Math.min(Math.max(val('fn_years'), 0), 60);
-  const r = calcMonthlyFund({
-    basePrice: val('fn_baseprice'), distPer1000: val('fn_dist'),
-    principal: val('fn_principal'), addMonthly: val('fn_add'), years
-  });
+  const r = calcMonthlyFund({ basePrice: val('fn_baseprice'), distPer1000: val('fn_dist'), principal: val('fn_principal'), addMonthly: val('fn_add'), years });
   document.getElementById('fn_eff').textContent = pct(r.effRate);
   document.getElementById('fn_m0').textContent = won(r.rows[0].monthDist);
   document.getElementById('fn_mN').textContent = won(r.rows[r.rows.length - 1].monthDist);
   document.getElementById('fn_pN').textContent = won(r.rows[r.rows.length - 1].principal);
-
-  const tb = document.querySelector('#fn_table tbody');
-  tb.innerHTML = r.rows.map(x =>
+  document.querySelector('#fn_table tbody').innerHTML = r.rows.map(x =>
     `<tr><td>${x.year}년</td><td>${num(x.principal)}</td><td>${num(x.units)}</td><td>${num(x.yearDist)}</td><td>${num(x.monthDist)}</td><td>${num(x.monthSave)}</td><td>${num(x.yearSave)}</td></tr>`
   ).join('');
-
   lineChart(document.getElementById('fn_chart'), [
-    { name: '투자원금', color: C.gold, data: r.rows.map(x => x.principal) },
+    { name: '투자원금', color: C.sum, data: r.rows.map(x => x.principal) },
     { name: '월 분배금', color: C.stock, data: r.rows.map(x => x.monthDist) }
   ], { xlabels: r.rows.map(x => x.year + '년'), yfmt: v => Math.round(v / 10000).toLocaleString('ko-KR') + '만' });
 }
@@ -147,20 +177,16 @@ function renderAlloc() {
   document.getElementById('al_profit').textContent = won(last.sum - totalIn);
   document.getElementById('al_sentence').innerHTML =
     `매월 <b>${won(val('al_amount'))}</b>씩 <b>${num(months)}개월</b> 투자하면 최종 평가액은 <b>${won(last.sum)}</b>입니다.`;
-
   const start = parseYM(document.getElementById('al_start').value, 2021, 5);
-  const tb = document.querySelector('#al_table tbody');
-  tb.innerHTML = r.rows.map(x =>
+  document.querySelector('#al_table tbody').innerHTML = r.rows.map(x =>
     `<tr class="${x.m % 12 === 0 ? 'year-mark' : ''}"><td>${x.m}</td><td>${ymLabel(start.y, start.m0, x.m - 1)}</td><td>${num(x.D)}</td><td>${num(x.F)}</td><td>${num(x.H)}</td><td>${num(x.sum)}</td></tr>`
   ).join('');
-
   lineChart(document.getElementById('al_chart'), [
     { name: '금리형', color: C.rate, data: r.rows.map(x => x.D) },
     { name: '채권형', color: C.bond, data: r.rows.map(x => x.F) },
     { name: '주식형', color: C.stock, data: r.rows.map(x => x.H) },
     { name: '합계', color: C.sum, data: r.rows.map(x => x.sum) }
   ], { xlabels: r.rows.map(x => x.m + '월'), yfmt: v => Math.round(v / 10000).toLocaleString('ko-KR') + '만' });
-
   donutChart(document.getElementById('al_donut'), [
     { name: '금리형', value: val('al_w_rate'), color: C.rate },
     { name: '채권형', value: val('al_w_bond'), color: C.bond },
@@ -183,13 +209,10 @@ function renderLump() {
   document.getElementById('lp_profit').textContent = won(last.sum - r.totalIn);
   document.getElementById('lp_sentence').innerHTML =
     `거치식 + 매월 <b>${won(val('lp_amount'))}</b> 적립을 <b>${num(months)}개월</b> 지속하면 최종 평가액은 <b>${won(last.sum)}</b>입니다.`;
-
   const start = parseYM(document.getElementById('lp_start').value, 2023, 7);
-  const tb = document.querySelector('#lp_table tbody');
-  tb.innerHTML = r.rows.map(x =>
+  document.querySelector('#lp_table tbody').innerHTML = r.rows.map(x =>
     `<tr class="${x.m % 12 === 0 ? 'year-mark' : ''}"><td>${x.m}</td><td>${ymLabel(start.y, start.m0, x.m - 1)}</td><td>${num(x.E)}</td><td>${num(x.H)}</td><td>${num(x.K)}</td><td>${num(x.sum)}</td></tr>`
   ).join('');
-
   lineChart(document.getElementById('lp_chart'), [
     { name: '금리형', color: C.rate, data: r.rows.map(x => x.E) },
     { name: '채권형', color: C.bond, data: r.rows.map(x => x.H) },
@@ -216,22 +239,15 @@ function renderLoan() {
     r = calcLoanBullet({ amount, rate, months });
     note = '<b>만기 일시상환</b>: 매월 이자만 내고 만기에 원금 전액을 한 번에 상환합니다. 총이자가 가장 큽니다.';
   }
-
-  const head = r.monthlyPay != null
-    ? `월 상환금 <b>${won(r.monthlyPay)}</b>`
-    : `월평균 납입금 ${won(r.avgPay)}`;
-  document.getElementById('ln_headline').innerHTML = head;
+  document.getElementById('ln_headline').innerHTML = r.monthlyPay != null ? `월 상환금 <b>${won(r.monthlyPay)}</b>` : `월평균 납입금 ${won(r.avgPay)}`;
   document.getElementById('ln_principal').textContent = won(r.principal);
   document.getElementById('ln_interest').textContent = won(r.totalInterest);
   document.getElementById('ln_cost').textContent = won(r.totalCost);
   document.getElementById('ln_avgpay').textContent = won(r.avgPay);
   document.getElementById('ln_note').innerHTML = note;
-
-  const tb = document.querySelector('#ln_table tbody');
-  tb.innerHTML = r.rows.map(x =>
+  document.querySelector('#ln_table tbody').innerHTML = r.rows.map(x =>
     `<tr><td>${x.k}</td><td>${num(x.principal)}</td><td>${num(x.interest)}</td><td>${num(x.pay)}</td><td>${num(x.bal)}</td></tr>`
   ).join('');
-
   lineChart(document.getElementById('ln_chart'), [
     { name: '대출잔액', color: C.rate, data: r.rows.map(x => x.bal) },
     { name: '납입원금', color: C.sum, data: r.rows.map(x => x.principal) },
@@ -239,23 +255,24 @@ function renderLoan() {
   ], { xlabels: r.rows.map(x => x.k + '회'), yfmt: v => Math.round(v / 10000).toLocaleString('ko-KR') + '만' });
 }
 
-/* ── 통합 재계산 (활성 탭만) ──────────────────────────────────────────── */
+/* ── 통합 재계산 (활성 탭만 무거운 렌더 수행) ─────────────────────────── */
 function recomputeAll() {
-  try { renderMain(); } catch (e) { console.error('main', e); }
   const active = document.querySelector('.tab-panel.active');
-  if (!active) return;
+  const id = active ? active.id : 'tab-deposit';
   try {
-    if (active.id === 'tab-fund') renderFund();
-    else if (active.id === 'tab-alloc') renderAlloc();
-    else if (active.id === 'tab-lump') renderLump();
-    else if (active.id === 'tab-loan') renderLoan();
-  } catch (e) { console.error(active.id, e); }
+    if (id === 'tab-deposit') renderDeposit();
+    else if (id === 'tab-savings') renderSavings();
+    else if (id === 'tab-pension') renderPension();
+    else if (id === 'tab-invest') {
+      if (investSub === 'quick') renderQuick();
+      else if (investSub === 'fund') renderFund();
+      else if (investSub === 'alloc') renderAlloc();
+      else if (investSub === 'lump') renderLump();
+    } else if (id === 'tab-loan') renderLoan();
+  } catch (e) { console.error(id, e); }
 }
 
 document.addEventListener('input', recomputeAll);
 document.addEventListener('change', recomputeAll);
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('ln_grace_field').style.display = '';
-  recomputeAll();
-});
+document.addEventListener('DOMContentLoaded', recomputeAll);
 recomputeAll();

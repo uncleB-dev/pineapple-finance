@@ -68,6 +68,38 @@ function calcInstallmentSimple({ monthly, months, rate, inflation }) {
   return { total, deposit, interest, tax };
 }
 
+/* ─────────────────────────── 연금 계산기 (2단계 시뮬레이터) ──────────────────
+ *  ① 적립(축적) 단계: 현재자산 + 매월 적립 → 은퇴 시점 자산 (월복리, FV)
+ *  ② 수령(인출) 단계: 은퇴 자산을 수령기간 동안 매월 인출 (PMT)
+ *  엑셀 메인 시트의 FV/PMT 로직을 노후설계용으로 확장. */
+function calcPension({ initial, monthly, accumYears, accumRate, payoutYears, payoutRate, inflation }) {
+  const na = Math.round(accumYears * 12);
+  const np = Math.round(payoutYears * 12);
+  // ① 적립 단계
+  const nest = -FV(accumRate / 12, na, monthly, initial);   // 은퇴 시점 자산
+  const contributed = initial + monthly * na;                // 총 납입원금
+  const accumProfit = nest - contributed;                    // 적립 수익
+  // ② 수령 단계
+  const monthlyPayout = np > 0 ? -PMT(payoutRate / 12, np, nest, 0) : 0; // 매월 수령액(원금 소진)
+  const totalPayout = monthlyPayout * np;                    // 총 수령액
+  const interestOnly = nest * payoutRate / 12;               // 원금 보존(이자만) 시 매월
+  // 첫 수령액의 물가 반영 현재가치 (은퇴 시점은 accumYears 후)
+  const realFirstPayout = monthlyPayout / Math.pow(1 + inflation, accumYears);
+
+  // 자산 추이 (연 단위): 적립 0~accumYears, 수령 +1~payoutYears
+  const timeline = [];
+  for (let y = 0; y <= accumYears; y++) {
+    timeline.push({ label: `+${y}년`, value: -FV(accumRate / 12, y * 12, monthly, initial), phase: 'accum' });
+  }
+  const rp = payoutRate / 12;
+  for (let y = 1; y <= payoutYears; y++) {
+    const t = y * 12;
+    const bal = nest * Math.pow(1 + rp, t) - monthlyPayout * (rp === 0 ? t : (Math.pow(1 + rp, t) - 1) / rp);
+    timeline.push({ label: `+${accumYears + y}년`, value: Math.max(0, bal), phase: 'payout' });
+  }
+  return { nest, contributed, accumProfit, monthlyPayout, totalPayout, interestOnly, realFirstPayout, timeline };
+}
+
 /* ─────────────────────────── 월지급식펀드 계산기 ─────────────────────────── */
 /* 분배금 재투자 모델: 원금이 연 적립금(연 분배금+추가적립)만큼 매년 성장 */
 function calcMonthlyFund({ basePrice, distPer1000, principal, addMonthly, years }) {

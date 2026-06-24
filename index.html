@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>파인애플 금융계산기</title>
+<meta name="description" content="예금·적금·연금·투자·대출을 한 곳에서. 엑셀 재무함수 동일 재현 · Montage 디자인" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -12,75 +14,28 @@
     <div class="logo">🍍</div>
     <div>
       <h1>파인애플 금융계산기</h1>
-      <p>예금·적금·투자·연금·대출을 한 곳에서 — 엑셀 원본 수식 그대로</p>
+      <p>예금 · 적금 · 연금 · 투자 · 대출 — 엑셀 원본 수식 그대로</p>
     </div>
   </div>
 </header>
 
 <nav class="tabs">
   <div class="wrap">
-    <button data-tab="main" class="active">종합 계산기</button>
-    <button data-tab="fund">월지급식 펀드</button>
-    <button data-tab="alloc">투자자산 배분</button>
-    <button data-tab="lump">거치+적립 투자</button>
+    <button data-tab="deposit" class="active">예금 계산기</button>
+    <button data-tab="savings">적금 계산기</button>
+    <button data-tab="pension">연금 계산기</button>
+    <button data-tab="invest">투자 계산기</button>
     <button data-tab="loan">대출 계산기</button>
   </div>
 </nav>
 
 <main class="wrap">
 
-  <!-- ================= 종합 계산기 ================= -->
-  <section id="tab-main" class="tab-panel active">
-
-    <!-- 미래가치 -->
-    <div class="card">
-      <h2>📈 미래가치 계산</h2>
-      <p class="desc">지금 가진 돈을 일정 수익률로 굴리면 미래에 얼마가 되는지 계산합니다. (복리, 엑셀 <code>FV</code> 함수)</p>
-      <div class="grid3">
-        <div class="field"><label>현재가치 (원)</label><div class="with-unit"><input id="fv_pv" value="100000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>수익률 (연)</label><div class="with-unit"><input id="fv_rate" value="3"><span class="unit">%</span></div></div>
-        <div class="field"><label>기간 (년)</label><div class="with-unit"><input id="fv_years" value="10"><span class="unit">년</span></div></div>
-      </div>
-      <div class="result">
-        <div class="big" id="fv_out">-</div>
-        <div class="sentence" id="fv_sentence"></div>
-      </div>
-    </div>
-
-    <!-- 현재가치 -->
-    <div class="card">
-      <h2>🔎 현재가치 계산</h2>
-      <p class="desc">미래의 목표 금액이 현재 가치로는 얼마인지 역산합니다. (할인, 엑셀 <code>PV</code> 함수)</p>
-      <div class="grid3">
-        <div class="field"><label>미래가치 (원)</label><div class="with-unit"><input id="pv_fv" value="1000000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>수익률 (연)</label><div class="with-unit"><input id="pv_rate" value="2"><span class="unit">%</span></div></div>
-        <div class="field"><label>기간 (년)</label><div class="with-unit"><input id="pv_years" value="10"><span class="unit">년</span></div></div>
-      </div>
-      <div class="result">
-        <div class="big" id="pv_out">-</div>
-        <div class="sentence" id="pv_sentence"></div>
-      </div>
-    </div>
-
-    <!-- 목돈 모으기 -->
-    <div class="card">
-      <h2>🎯 목돈 모으기 계산</h2>
-      <p class="desc">목표 금액을 정해진 기간 안에 모으려면 매월 얼마씩 적립해야 하는지 계산합니다. (엑셀 <code>PMT</code> 함수)</p>
-      <div class="grid3">
-        <div class="field"><label>목표 금액 (원)</label><div class="with-unit"><input id="tg_target" value="100000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>적립 기간 (개월)</label><div class="with-unit"><input id="tg_months" value="36"><span class="unit">개월</span></div></div>
-        <div class="field"><label>연 수익률</label><div class="with-unit"><input id="tg_rate" value="5"><span class="unit">%</span></div></div>
-      </div>
-      <div class="result">
-        <div class="big" id="tg_out">-</div>
-        <div class="sentence" id="tg_sentence"></div>
-      </div>
-    </div>
-
-    <!-- 예금 월복리 -->
+  <!-- ================= 예금 계산기 ================= -->
+  <section id="tab-deposit" class="tab-panel active">
     <div class="card">
       <h2>🏦 예금 / 거치식 투자 — 월 복리</h2>
-      <p class="desc">목돈을 한 번에 맡기고 월 복리로 굴립니다. 세금 구간별 실수령액·물가 반영 현재가치까지 계산합니다.</p>
+      <p class="desc">목돈을 한 번에 맡기고 월 복리로 굴립니다. 세금 구간별 실수령액·물가 반영 현재가치까지 계산합니다. (엑셀 <code>FV</code> 함수)</p>
       <div class="grid2">
         <div class="field"><label>거치 금액 (원)</label><div class="with-unit"><input id="dc_principal" value="49400000"><span class="unit">원</span></div></div>
         <div class="field"><label>거치 기간 (개월)</label><div class="with-unit"><input id="dc_months" value="204"><span class="unit">개월</span></div></div>
@@ -88,6 +43,7 @@
         <div class="field"><label>물가상승률</label><div class="with-unit"><input id="dc_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
+        <div class="sub-label">만기 수령액 (비과세 기준)</div>
         <div class="big" id="dc_total">-</div>
         <div class="kpis">
           <div class="kpi"><div class="t">원금</div><div class="v" id="dc_p">-</div></div>
@@ -97,7 +53,6 @@
       <div class="taxbox" data-prefix="dc"></div>
     </div>
 
-    <!-- 예금 연단리 -->
     <div class="card">
       <h2>🏦 예금 / 거치식 투자 — 연 단리</h2>
       <p class="desc">단리 상품: 이자가 원금에만 붙습니다. <code>이자 = 원금 × 이자율 × 기간(년)</code></p>
@@ -108,6 +63,7 @@
         <div class="field"><label>물가상승률</label><div class="with-unit"><input id="ds_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
+        <div class="sub-label">만기 수령액 (비과세 기준)</div>
         <div class="big" id="ds_total">-</div>
         <div class="kpis">
           <div class="kpi"><div class="t">원금</div><div class="v" id="ds_p">-</div></div>
@@ -116,8 +72,10 @@
       </div>
       <div class="taxbox" data-prefix="ds"></div>
     </div>
+  </section>
 
-    <!-- 적금 월복리 -->
+  <!-- ================= 적금 계산기 ================= -->
+  <section id="tab-savings" class="tab-panel">
     <div class="card">
       <h2>💰 적금 / 적립식 투자 — 월 복리</h2>
       <p class="desc">매월 일정액을 납입하고 월 복리로 굴립니다. (엑셀 <code>FV</code> 함수, 정기납입)</p>
@@ -128,6 +86,7 @@
         <div class="field"><label>물가상승률</label><div class="with-unit"><input id="ic_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
+        <div class="sub-label">만기 수령액 (비과세 기준)</div>
         <div class="big" id="ic_total">-</div>
         <div class="kpis">
           <div class="kpi"><div class="t">총 납입금액</div><div class="v" id="ic_d">-</div></div>
@@ -137,7 +96,6 @@
       <div class="taxbox" data-prefix="ic"></div>
     </div>
 
-    <!-- 적금 연단리 -->
     <div class="card">
       <h2>💰 적금 / 적립식 투자 — 연 단리</h2>
       <p class="desc">매월 납입, 각 회차 납입금이 보유 기간만큼 단리 이자를 받습니다. (등차수열 합 공식)</p>
@@ -148,6 +106,7 @@
         <div class="field"><label>물가상승률</label><div class="with-unit"><input id="is_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
+        <div class="sub-label">만기 수령액 (비과세 기준)</div>
         <div class="big" id="is_total">-</div>
         <div class="kpis">
           <div class="kpi"><div class="t">총 납입금액</div><div class="v" id="is_d">-</div></div>
@@ -156,119 +115,204 @@
       </div>
       <div class="taxbox" data-prefix="is"></div>
     </div>
-
   </section>
 
-  <!-- ================= 월지급식 펀드 ================= -->
-  <section id="tab-fund" class="tab-panel">
+  <!-- ================= 연금 계산기 (NEW) ================= -->
+  <section id="tab-pension" class="tab-panel">
     <div class="card">
-      <h2>🪙 월지급식 펀드 계산기</h2>
-      <p class="desc">분배금을 재투자(좌수 증가)하여 원금이 매년 성장하는 모델입니다. 보유좌수 = 원금 ÷ 기준가 × 1,000.</p>
-      <div class="grid3">
-        <div class="field"><label>투자 원금 (원)</label><div class="with-unit"><input id="fn_principal" value="10000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>기준가 (원)<span class="hint">1,000좌 가격 기준</span></label><div class="with-unit"><input id="fn_baseprice" value="796.4"><span class="unit">원</span></div></div>
-        <div class="field"><label>1,000좌당 월 분배금 (원)</label><div class="with-unit"><input id="fn_dist" value="4.02"><span class="unit">원</span></div></div>
-        <div class="field"><label>월 추가 적립 (원)<span class="hint">분배금 외 추가 납입</span></label><div class="with-unit"><input id="fn_add" value="0"><span class="unit">원</span></div></div>
-        <div class="field"><label>표시 기간 (년)</label><div class="with-unit"><input id="fn_years" value="40"><span class="unit">년</span></div></div>
+      <h2>👵 연금 계산기 — 노후 설계 시뮬레이터</h2>
+      <p class="desc">①&nbsp;<b>적립 단계</b>에서 매월 모아 은퇴 시점 자산을 만들고, ②&nbsp;<b>수령 단계</b>에서 그 자산을 매월 연금으로 나눠 받는 과정을 한 번에 계산합니다. (엑셀 <code>FV</code>·<code>PMT</code> 함수 확장)</p>
+
+      <h3>① 적립(축적) 단계</h3>
+      <div class="grid2">
+        <div class="field"><label>현재 보유 자산 (원)<span class="hint">이미 모은 목돈 (없으면 0)</span></label><div class="with-unit"><input id="pn_initial" value="0"><span class="unit">원</span></div></div>
+        <div class="field"><label>매월 적립액 (원)</label><div class="with-unit"><input id="pn_monthly" value="500000"><span class="unit">원</span></div></div>
+        <div class="field"><label>적립 기간 (년)</label><div class="with-unit"><input id="pn_accum_years" value="20"><span class="unit">년</span></div></div>
+        <div class="field"><label>적립기 기대수익률</label><div class="with-unit"><input id="pn_accum_rate" value="5"><span class="unit">%</span></div></div>
       </div>
+
+      <h3>② 수령(인출) 단계</h3>
+      <div class="grid3">
+        <div class="field"><label>수령 기간 (년)</label><div class="with-unit"><input id="pn_payout_years" value="20"><span class="unit">년</span></div></div>
+        <div class="field"><label>수령기 기대수익률<span class="hint">보수적으로 가정</span></label><div class="with-unit"><input id="pn_payout_rate" value="3"><span class="unit">%</span></div></div>
+        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="pn_inf" value="2"><span class="unit">%</span></div></div>
+      </div>
+
       <div class="result">
+        <div class="sub-label">은퇴 시점 적립 자산</div>
+        <div class="big" id="pn_nest">-</div>
+        <div class="sub-label">매월 받는 연금 (원금 소진형)</div>
+        <div class="big" id="pn_payout" style="color:var(--status-positive)">-</div>
+        <div class="sentence" id="pn_sentence"></div>
         <div class="kpis">
-          <div class="kpi"><div class="t">분배 기준 연환산 수익률</div><div class="v pos" id="fn_eff">-</div></div>
-          <div class="kpi"><div class="t">시작 월 분배금</div><div class="v" id="fn_m0">-</div></div>
-          <div class="kpi"><div class="t" id="fn_lbl_t">최종 월 분배금</div><div class="v pos" id="fn_mN">-</div></div>
-          <div class="kpi"><div class="t" id="fn_lbl_p">최종 투자 원금</div><div class="v" id="fn_pN">-</div></div>
+          <div class="kpi"><div class="t">총 납입원금</div><div class="v" id="pn_contrib">-</div></div>
+          <div class="kpi"><div class="t">적립 수익</div><div class="v pos" id="pn_profit">-</div></div>
+          <div class="kpi"><div class="t">총 수령액</div><div class="v" id="pn_total">-</div></div>
+          <div class="kpi"><div class="t">원금 보존(이자만) 시 매월</div><div class="v" id="pn_interest_only">-</div></div>
+          <div class="kpi"><div class="t">첫 연금의 현재가치(물가반영)</div><div class="v" id="pn_real">-</div></div>
         </div>
       </div>
-      <div class="chart-box" id="fn_chart"></div>
-      <h3>연도별 상세</h3>
-      <div class="table-wrap">
-        <table id="fn_table">
-          <thead><tr><th>기간</th><th>투자원금(원)</th><th>보유좌수</th><th>연 분배금</th><th>월 분배금</th><th>월 적립금</th><th>연 적립금</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <div class="note">‘원금 소진형’은 수령기간 동안 자산을 모두 사용하는 방식, ‘이자만 수령’은 원금을 남기고 운용수익만 받는 방식입니다.</div>
+      <div class="chart-box" id="pn_chart"></div>
     </div>
   </section>
 
-  <!-- ================= 투자자산 배분 ================= -->
-  <section id="tab-alloc" class="tab-panel">
-    <div class="card">
-      <h2>📊 투자자산 배분 계산기</h2>
-      <p class="desc">매월 투자금을 비율에 따라 금리형(단리)·채권형(월복리)·주식형(월복리)에 나눠 적립합니다. 비율 합계는 보통 10입니다.</p>
-      <div class="grid2">
-        <div class="field"><label>월 투자금액 (원)</label><div class="with-unit"><input id="al_amount" value="1000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>기간 (개월)<span class="hint">최대 360 (30년)</span></label><div class="with-unit"><input id="al_months" value="120"><span class="unit">개월</span></div></div>
-        <div class="field"><label>시작 연월</label><input id="al_start" type="month" value="2021-06"></div>
-      </div>
-      <h3>자산별 기대수익률 (연) · 비율 배분</h3>
-      <div class="grid3">
-        <div class="field"><label style="color:var(--rate-c)">금리형(단리) 수익률</label><div class="with-unit"><input id="al_r_rate" value="1.5"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--bond)">채권형(복리) 수익률</label><div class="with-unit"><input id="al_r_bond" value="4.8"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--stock)">주식형(복리) 수익률</label><div class="with-unit"><input id="al_r_stock" value="8"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--rate-c)">금리형 비율</label><input id="al_w_rate" value="8"></div>
-        <div class="field"><label style="color:var(--bond)">채권형 비율</label><input id="al_w_bond" value="0"></div>
-        <div class="field"><label style="color:var(--stock)">주식형 비율</label><input id="al_w_stock" value="2"></div>
-      </div>
-      <div class="result">
-        <div class="big" id="al_sum">-</div>
-        <div class="sentence" id="al_sentence"></div>
-        <div class="kpis">
-          <div class="kpi"><div class="t">총 납입원금</div><div class="v" id="al_in">-</div></div>
-          <div class="kpi"><div class="t">총 수익(평가액-원금)</div><div class="v pos" id="al_profit">-</div></div>
+  <!-- ================= 투자 계산기 ================= -->
+  <section id="tab-invest" class="tab-panel">
+    <div class="subtabs">
+      <button data-sub="quick" class="active">빠른 계산</button>
+      <button data-sub="fund">월지급식 펀드</button>
+      <button data-sub="alloc">투자자산 배분</button>
+      <button data-sub="lump">거치+적립 투자</button>
+    </div>
+
+    <!-- 빠른 계산: 미래가치 / 현재가치 / 목돈모으기 -->
+    <div class="sub-panel active" data-sub="quick">
+      <div class="card">
+        <h2>📈 미래가치 계산</h2>
+        <p class="desc">지금 가진 돈을 일정 수익률로 굴리면 미래에 얼마가 되는지 계산합니다. (복리, 엑셀 <code>FV</code> 함수)</p>
+        <div class="grid3">
+          <div class="field"><label>현재가치 (원)</label><div class="with-unit"><input id="fv_pv" value="100000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>수익률 (연)</label><div class="with-unit"><input id="fv_rate" value="3"><span class="unit">%</span></div></div>
+          <div class="field"><label>기간 (년)</label><div class="with-unit"><input id="fv_years" value="10"><span class="unit">년</span></div></div>
         </div>
+        <div class="result"><div class="big" id="fv_out">-</div><div class="sentence" id="fv_sentence"></div></div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
-        <div class="chart-box" style="flex:2 1 420px" id="al_chart"></div>
-        <div class="chart-box" style="flex:1 1 240px" id="al_donut"></div>
+      <div class="card">
+        <h2>🔎 현재가치 계산</h2>
+        <p class="desc">미래의 목표 금액이 현재 가치로는 얼마인지 역산합니다. (할인, 엑셀 <code>PV</code> 함수)</p>
+        <div class="grid3">
+          <div class="field"><label>미래가치 (원)</label><div class="with-unit"><input id="pv_fv" value="1000000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>수익률 (연)</label><div class="with-unit"><input id="pv_rate" value="2"><span class="unit">%</span></div></div>
+          <div class="field"><label>기간 (년)</label><div class="with-unit"><input id="pv_years" value="10"><span class="unit">년</span></div></div>
+        </div>
+        <div class="result"><div class="big" id="pv_out">-</div><div class="sentence" id="pv_sentence"></div></div>
       </div>
-      <div class="note">금리형(단리)은 엑셀 원본대로 <b>12개월마다 연이자를 1회 가산</b>합니다.</div>
-      <h3>월별 상세</h3>
-      <div class="table-wrap">
-        <table id="al_table">
-          <thead><tr><th>회차</th><th>월</th><th>금리형 평가액</th><th>채권형 평가액</th><th>주식형 평가액</th><th>평가액 합계</th></tr></thead>
-          <tbody></tbody>
-        </table>
+      <div class="card">
+        <h2>🎯 목돈 모으기 계산</h2>
+        <p class="desc">목표 금액을 정해진 기간 안에 모으려면 매월 얼마씩 적립해야 하는지 계산합니다. (엑셀 <code>PMT</code> 함수)</p>
+        <div class="grid3">
+          <div class="field"><label>목표 금액 (원)</label><div class="with-unit"><input id="tg_target" value="100000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>적립 기간 (개월)</label><div class="with-unit"><input id="tg_months" value="36"><span class="unit">개월</span></div></div>
+          <div class="field"><label>연 수익률</label><div class="with-unit"><input id="tg_rate" value="5"><span class="unit">%</span></div></div>
+        </div>
+        <div class="result"><div class="big" id="tg_out">-</div><div class="sentence" id="tg_sentence"></div></div>
       </div>
     </div>
-  </section>
 
-  <!-- ================= 거치 + 적립 투자 ================= -->
-  <section id="tab-lump" class="tab-panel">
-    <div class="card">
-      <h2>🌱 거치식 + 적립식 투자 예상액 계산기</h2>
-      <p class="desc">처음에 목돈(거치식)을 넣고, 이후 매월(적립식) 추가 납입하는 혼합 전략의 미래 평가액을 자산별로 계산합니다.</p>
-      <div class="grid2">
-        <div class="field"><label>월 적립식 투자금액 (원)</label><div class="with-unit"><input id="lp_amount" value="1000000"><span class="unit">원</span></div></div>
-        <div class="field"><label>기간 (개월)<span class="hint">최대 360 (30년)</span></label><div class="with-unit"><input id="lp_months" value="120"><span class="unit">개월</span></div></div>
-        <div class="field"><label>시작 연월</label><input id="lp_start" type="month" value="2023-08"></div>
-      </div>
-      <h3>자산별 기대수익률 (연) · 비율 배분 · 거치식 초기 투자금</h3>
-      <div class="grid3">
-        <div class="field"><label style="color:var(--rate-c)">금리형(단리) 수익률</label><div class="with-unit"><input id="lp_r_rate" value="1.5"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--bond)">채권형(복리) 수익률</label><div class="with-unit"><input id="lp_r_bond" value="4.8"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--stock)">주식형(복리) 수익률</label><div class="with-unit"><input id="lp_r_stock" value="8"><span class="unit">%</span></div></div>
-        <div class="field"><label style="color:var(--rate-c)">금리형 비율</label><input id="lp_w_rate" value="0"></div>
-        <div class="field"><label style="color:var(--bond)">채권형 비율</label><input id="lp_w_bond" value="0"></div>
-        <div class="field"><label style="color:var(--stock)">주식형 비율</label><input id="lp_w_stock" value="10"></div>
-        <div class="field"><label style="color:var(--rate-c)">금리형 거치금</label><div class="with-unit"><input id="lp_l_rate" value="0"><span class="unit">원</span></div></div>
-        <div class="field"><label style="color:var(--bond)">채권형 거치금</label><div class="with-unit"><input id="lp_l_bond" value="0"><span class="unit">원</span></div></div>
-        <div class="field"><label style="color:var(--stock)">주식형 거치금</label><div class="with-unit"><input id="lp_l_stock" value="0"><span class="unit">원</span></div></div>
-      </div>
-      <div class="result">
-        <div class="big" id="lp_sum">-</div>
-        <div class="sentence" id="lp_sentence"></div>
-        <div class="kpis">
-          <div class="kpi"><div class="t">총 투자원금</div><div class="v" id="lp_in">-</div></div>
-          <div class="kpi"><div class="t">총 수익</div><div class="v pos" id="lp_profit">-</div></div>
+    <!-- 월지급식 펀드 -->
+    <div class="sub-panel" data-sub="fund">
+      <div class="card">
+        <h2>🪙 월지급식 펀드 계산기</h2>
+        <p class="desc">분배금을 재투자(좌수 증가)하여 원금이 매년 성장하는 모델입니다. 보유좌수 = 원금 ÷ 기준가 × 1,000.</p>
+        <div class="grid3">
+          <div class="field"><label>투자 원금 (원)</label><div class="with-unit"><input id="fn_principal" value="10000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>기준가 (원)<span class="hint">1,000좌 가격 기준</span></label><div class="with-unit"><input id="fn_baseprice" value="796.4"><span class="unit">원</span></div></div>
+          <div class="field"><label>1,000좌당 월 분배금 (원)</label><div class="with-unit"><input id="fn_dist" value="4.02"><span class="unit">원</span></div></div>
+          <div class="field"><label>월 추가 적립 (원)<span class="hint">분배금 외 추가 납입</span></label><div class="with-unit"><input id="fn_add" value="0"><span class="unit">원</span></div></div>
+          <div class="field"><label>표시 기간 (년)</label><div class="with-unit"><input id="fn_years" value="40"><span class="unit">년</span></div></div>
+        </div>
+        <div class="result">
+          <div class="kpis">
+            <div class="kpi"><div class="t">분배 기준 연환산 수익률</div><div class="v pos" id="fn_eff">-</div></div>
+            <div class="kpi"><div class="t">시작 월 분배금</div><div class="v" id="fn_m0">-</div></div>
+            <div class="kpi"><div class="t">최종 월 분배금</div><div class="v pos" id="fn_mN">-</div></div>
+            <div class="kpi"><div class="t">최종 투자 원금</div><div class="v" id="fn_pN">-</div></div>
+          </div>
+        </div>
+        <div class="chart-box" id="fn_chart"></div>
+        <h3>연도별 상세</h3>
+        <div class="table-wrap">
+          <table id="fn_table">
+            <thead><tr><th>기간</th><th>투자원금(원)</th><th>보유좌수</th><th>연 분배금</th><th>월 분배금</th><th>월 적립금</th><th>연 적립금</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
-      <div class="chart-box" id="lp_chart"></div>
-      <h3>월별 상세</h3>
-      <div class="table-wrap">
-        <table id="lp_table">
-          <thead><tr><th>회차</th><th>월</th><th>금리형 평가액</th><th>채권형 평가액</th><th>주식형 평가액</th><th>평가액 합계</th></tr></thead>
-          <tbody></tbody>
-        </table>
+    </div>
+
+    <!-- 투자자산 배분 -->
+    <div class="sub-panel" data-sub="alloc">
+      <div class="card">
+        <h2>📊 투자자산 배분 계산기</h2>
+        <p class="desc">매월 투자금을 비율에 따라 금리형(단리)·채권형(월복리)·주식형(월복리)에 나눠 적립합니다. 비율 합계는 보통 10입니다.</p>
+        <div class="grid2">
+          <div class="field"><label>월 투자금액 (원)</label><div class="with-unit"><input id="al_amount" value="1000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>기간 (개월)<span class="hint">최대 360 (30년)</span></label><div class="with-unit"><input id="al_months" value="120"><span class="unit">개월</span></div></div>
+          <div class="field"><label>시작 연월</label><input id="al_start" type="month" value="2021-06"></div>
+        </div>
+        <h3>자산별 기대수익률 (연) · 비율 배분</h3>
+        <div class="grid3">
+          <div class="field"><label style="color:var(--asset-rate)">금리형(단리) 수익률</label><div class="with-unit"><input id="al_r_rate" value="1.5"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-bond)">채권형(복리) 수익률</label><div class="with-unit"><input id="al_r_bond" value="4.8"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-stock)">주식형(복리) 수익률</label><div class="with-unit"><input id="al_r_stock" value="8"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-rate)">금리형 비율</label><input id="al_w_rate" value="8"></div>
+          <div class="field"><label style="color:var(--asset-bond)">채권형 비율</label><input id="al_w_bond" value="0"></div>
+          <div class="field"><label style="color:var(--asset-stock)">주식형 비율</label><input id="al_w_stock" value="2"></div>
+        </div>
+        <div class="result">
+          <div class="sub-label">최종 평가액 합계</div>
+          <div class="big" id="al_sum">-</div>
+          <div class="sentence" id="al_sentence"></div>
+          <div class="kpis">
+            <div class="kpi"><div class="t">총 납입원금</div><div class="v" id="al_in">-</div></div>
+            <div class="kpi"><div class="t">총 수익(평가액-원금)</div><div class="v pos" id="al_profit">-</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+          <div class="chart-box" style="flex:2 1 420px" id="al_chart"></div>
+          <div class="chart-box" style="flex:1 1 240px" id="al_donut"></div>
+        </div>
+        <div class="note">금리형(단리)은 엑셀 원본대로 <b>12개월마다 연이자를 1회 가산</b>합니다.</div>
+        <h3>월별 상세</h3>
+        <div class="table-wrap">
+          <table id="al_table">
+            <thead><tr><th>회차</th><th>월</th><th>금리형 평가액</th><th>채권형 평가액</th><th>주식형 평가액</th><th>평가액 합계</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 거치 + 적립 -->
+    <div class="sub-panel" data-sub="lump">
+      <div class="card">
+        <h2>🌱 거치식 + 적립식 투자 예상액 계산기</h2>
+        <p class="desc">처음에 목돈(거치식)을 넣고, 이후 매월(적립식) 추가 납입하는 혼합 전략의 미래 평가액을 자산별로 계산합니다.</p>
+        <div class="grid2">
+          <div class="field"><label>월 적립식 투자금액 (원)</label><div class="with-unit"><input id="lp_amount" value="1000000"><span class="unit">원</span></div></div>
+          <div class="field"><label>기간 (개월)<span class="hint">최대 360 (30년)</span></label><div class="with-unit"><input id="lp_months" value="120"><span class="unit">개월</span></div></div>
+          <div class="field"><label>시작 연월</label><input id="lp_start" type="month" value="2023-08"></div>
+        </div>
+        <h3>자산별 기대수익률 (연) · 비율 배분 · 거치식 초기 투자금</h3>
+        <div class="grid3">
+          <div class="field"><label style="color:var(--asset-rate)">금리형(단리) 수익률</label><div class="with-unit"><input id="lp_r_rate" value="1.5"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-bond)">채권형(복리) 수익률</label><div class="with-unit"><input id="lp_r_bond" value="4.8"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-stock)">주식형(복리) 수익률</label><div class="with-unit"><input id="lp_r_stock" value="8"><span class="unit">%</span></div></div>
+          <div class="field"><label style="color:var(--asset-rate)">금리형 비율</label><input id="lp_w_rate" value="0"></div>
+          <div class="field"><label style="color:var(--asset-bond)">채권형 비율</label><input id="lp_w_bond" value="0"></div>
+          <div class="field"><label style="color:var(--asset-stock)">주식형 비율</label><input id="lp_w_stock" value="10"></div>
+          <div class="field"><label style="color:var(--asset-rate)">금리형 거치금</label><div class="with-unit"><input id="lp_l_rate" value="0"><span class="unit">원</span></div></div>
+          <div class="field"><label style="color:var(--asset-bond)">채권형 거치금</label><div class="with-unit"><input id="lp_l_bond" value="0"><span class="unit">원</span></div></div>
+          <div class="field"><label style="color:var(--asset-stock)">주식형 거치금</label><div class="with-unit"><input id="lp_l_stock" value="0"><span class="unit">원</span></div></div>
+        </div>
+        <div class="result">
+          <div class="sub-label">최종 평가액 합계</div>
+          <div class="big" id="lp_sum">-</div>
+          <div class="sentence" id="lp_sentence"></div>
+          <div class="kpis">
+            <div class="kpi"><div class="t">총 투자원금</div><div class="v" id="lp_in">-</div></div>
+            <div class="kpi"><div class="t">총 수익</div><div class="v pos" id="lp_profit">-</div></div>
+          </div>
+        </div>
+        <div class="chart-box" id="lp_chart"></div>
+        <h3>월별 상세</h3>
+        <div class="table-wrap">
+          <table id="lp_table">
+            <thead><tr><th>회차</th><th>월</th><th>금리형 평가액</th><th>채권형 평가액</th><th>주식형 평가액</th><th>평가액 합계</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -313,7 +357,7 @@
 </main>
 
 <footer>
-  🍍 파인애플 금융계산기 · 엑셀 원본(FV·PV·PMT·IPMT·PPMT) 수식을 그대로 구현 · 본 계산기는 참고용이며 실제 상품 수익·세금과 다를 수 있습니다.
+  🍍 파인애플 금융계산기 · 디자인 시스템: Montage (WDS) · 엑셀 재무함수(FV·PV·PMT·IPMT·PPMT) 동일 구현 · 본 계산기는 참고용이며 실제 상품 수익·세금과 다를 수 있습니다.
 </footer>
 
 <script src="js/fin.js"></script>
