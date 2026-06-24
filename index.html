@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>파인애플 금융계산기</title>
+<title>엉클비 금융 계산기</title>
 <meta name="description" content="예금·적금·연금·투자·대출을 한 곳에서. 엑셀 재무함수 동일 재현 · Montage 디자인" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="stylesheet" href="css/styles.css" />
@@ -13,7 +13,7 @@
   <div class="wrap">
     <div class="logo">🍍</div>
     <div>
-      <h1>파인애플 금융계산기</h1>
+      <h1>엉클비 금융 계산기</h1>
       <p>예금 · 적금 · 연금 · 투자 · 대출 — 엑셀 원본 수식 그대로</p>
     </div>
   </div>
@@ -34,86 +34,54 @@
   <!-- ================= 예금 계산기 ================= -->
   <section id="tab-deposit" class="tab-panel active">
     <div class="card">
-      <h2>🏦 예금 / 거치식 투자 — 월 복리</h2>
-      <p class="desc">목돈을 한 번에 맡기고 월 복리로 굴립니다. 세금 구간별 실수령액·물가 반영 현재가치까지 계산합니다. (엑셀 <code>FV</code> 함수)</p>
+      <h2>🏦 예금 / 거치식 투자</h2>
+      <p class="desc" id="dep_desc"></p>
+      <div class="subtabs" id="dep_modes">
+        <button data-mode="compound" class="active">월 복리</button>
+        <button data-mode="simple">연 단리</button>
+      </div>
       <div class="grid2">
-        <div class="field"><label>거치 금액 (원)</label><div class="with-unit"><input id="dc_principal" value="49400000"><span class="unit">원</span></div></div>
-        <div class="field"><label>거치 기간 (개월)</label><div class="with-unit"><input id="dc_months" value="204"><span class="unit">개월</span></div></div>
-        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="dc_rate" value="5"><span class="unit">%</span></div></div>
-        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="dc_inf" value="0"><span class="unit">%</span></div></div>
+        <div class="field"><label>거치 금액 (원)</label><div class="with-unit"><input id="dep_principal" value="49400000"><span class="unit">원</span></div></div>
+        <div class="field"><label>거치 기간 (개월)</label><div class="with-unit"><input id="dep_months" value="204"><span class="unit">개월</span></div></div>
+        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="dep_rate" value="5"><span class="unit">%</span></div></div>
+        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="dep_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
         <div class="sub-label">만기 수령액 (비과세 기준)</div>
-        <div class="big" id="dc_total">-</div>
+        <div class="big" id="dep_total">-</div>
         <div class="kpis">
-          <div class="kpi"><div class="t">원금</div><div class="v" id="dc_p">-</div></div>
-          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="dc_i">-</div></div>
+          <div class="kpi"><div class="t">원금</div><div class="v" id="dep_p">-</div></div>
+          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="dep_i">-</div></div>
         </div>
       </div>
-      <div class="taxbox" data-prefix="dc"></div>
-    </div>
-
-    <div class="card">
-      <h2>🏦 예금 / 거치식 투자 — 연 단리</h2>
-      <p class="desc">단리 상품: 이자가 원금에만 붙습니다. <code>이자 = 원금 × 이자율 × 기간(년)</code></p>
-      <div class="grid2">
-        <div class="field"><label>거치 금액 (원)</label><div class="with-unit"><input id="ds_principal" value="2300000"><span class="unit">원</span></div></div>
-        <div class="field"><label>거치 기간 (개월)</label><div class="with-unit"><input id="ds_months" value="60"><span class="unit">개월</span></div></div>
-        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="ds_rate" value="2"><span class="unit">%</span></div></div>
-        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="ds_inf" value="0"><span class="unit">%</span></div></div>
-      </div>
-      <div class="result">
-        <div class="sub-label">만기 수령액 (비과세 기준)</div>
-        <div class="big" id="ds_total">-</div>
-        <div class="kpis">
-          <div class="kpi"><div class="t">원금</div><div class="v" id="ds_p">-</div></div>
-          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="ds_i">-</div></div>
-        </div>
-      </div>
-      <div class="taxbox" data-prefix="ds"></div>
+      <div class="taxbox" data-prefix="dep"></div>
     </div>
   </section>
 
   <!-- ================= 적금 계산기 ================= -->
   <section id="tab-savings" class="tab-panel">
     <div class="card">
-      <h2>💰 적금 / 적립식 투자 — 월 복리</h2>
-      <p class="desc">매월 일정액을 납입하고 월 복리로 굴립니다. (엑셀 <code>FV</code> 함수, 정기납입)</p>
+      <h2>💰 적금 / 적립식 투자</h2>
+      <p class="desc" id="sav_desc"></p>
+      <div class="subtabs" id="sav_modes">
+        <button data-mode="compound" class="active">월 복리</button>
+        <button data-mode="simple">연 단리</button>
+      </div>
       <div class="grid2">
-        <div class="field"><label>월 납입액 (원)</label><div class="with-unit"><input id="ic_monthly" value="240000"><span class="unit">원</span></div></div>
-        <div class="field"><label>적립 기간 (개월)</label><div class="with-unit"><input id="ic_months" value="204"><span class="unit">개월</span></div></div>
-        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="ic_rate" value="5"><span class="unit">%</span></div></div>
-        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="ic_inf" value="0"><span class="unit">%</span></div></div>
+        <div class="field"><label>월 납입액 (원)</label><div class="with-unit"><input id="sav_monthly" value="240000"><span class="unit">원</span></div></div>
+        <div class="field"><label>적립 기간 (개월)</label><div class="with-unit"><input id="sav_months" value="204"><span class="unit">개월</span></div></div>
+        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="sav_rate" value="5"><span class="unit">%</span></div></div>
+        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="sav_inf" value="0"><span class="unit">%</span></div></div>
       </div>
       <div class="result">
         <div class="sub-label">만기 수령액 (비과세 기준)</div>
-        <div class="big" id="ic_total">-</div>
+        <div class="big" id="sav_total">-</div>
         <div class="kpis">
-          <div class="kpi"><div class="t">총 납입금액</div><div class="v" id="ic_d">-</div></div>
-          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="ic_i">-</div></div>
+          <div class="kpi"><div class="t">총 납입금액</div><div class="v" id="sav_d">-</div></div>
+          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="sav_i">-</div></div>
         </div>
       </div>
-      <div class="taxbox" data-prefix="ic"></div>
-    </div>
-
-    <div class="card">
-      <h2>💰 적금 / 적립식 투자 — 연 단리</h2>
-      <p class="desc">매월 납입, 각 회차 납입금이 보유 기간만큼 단리 이자를 받습니다. (등차수열 합 공식)</p>
-      <div class="grid2">
-        <div class="field"><label>월 납입액 (원)</label><div class="with-unit"><input id="is_monthly" value="400000"><span class="unit">원</span></div></div>
-        <div class="field"><label>적립 기간 (개월)</label><div class="with-unit"><input id="is_months" value="60"><span class="unit">개월</span></div></div>
-        <div class="field"><label>연 이자율</label><div class="with-unit"><input id="is_rate" value="2"><span class="unit">%</span></div></div>
-        <div class="field"><label>물가상승률</label><div class="with-unit"><input id="is_inf" value="0"><span class="unit">%</span></div></div>
-      </div>
-      <div class="result">
-        <div class="sub-label">만기 수령액 (비과세 기준)</div>
-        <div class="big" id="is_total">-</div>
-        <div class="kpis">
-          <div class="kpi"><div class="t">총 납입금액</div><div class="v" id="is_d">-</div></div>
-          <div class="kpi"><div class="t">총 이자(세전)</div><div class="v pos" id="is_i">-</div></div>
-        </div>
-      </div>
-      <div class="taxbox" data-prefix="is"></div>
+      <div class="taxbox" data-prefix="sav"></div>
     </div>
   </section>
 
@@ -357,7 +325,7 @@
 </main>
 
 <footer>
-  🍍 파인애플 금융계산기 · 디자인 시스템: Montage (WDS) · 엑셀 재무함수(FV·PV·PMT·IPMT·PPMT) 동일 구현 · 본 계산기는 참고용이며 실제 상품 수익·세금과 다를 수 있습니다.
+  🍍 엉클비 금융 계산기 · 디자인 시스템: Montage (WDS) · 엑셀 재무함수(FV·PV·PMT·IPMT·PPMT) 동일 구현 · 본 계산기는 참고용이며 실제 상품 수익·세금과 다를 수 있습니다.
 </footer>
 
 <script src="js/fin.js"></script>

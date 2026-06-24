@@ -14,8 +14,10 @@ const C = {
   gold: '#FF9200'    // orange-50 (강조)
 };
 
-let investSub = 'quick';  // 투자 탭 활성 서브패널
-let loanMode = 'amort';   // 대출 상환 방식
+let investSub = 'quick';      // 투자 탭 활성 서브패널
+let loanMode = 'amort';       // 대출 상환 방식
+let depositMode = 'compound'; // 예금: 복리 / 단리
+let savingsMode = 'compound'; // 적금: 복리 / 단리
 
 /* ── 메인 탭 전환 ─────────────────────────────────────────────────────── */
 document.querySelectorAll('nav.tabs button').forEach(btn => {
@@ -39,6 +41,20 @@ document.querySelectorAll('#tab-invest .subtabs button').forEach(btn => {
     recomputeAll();
   });
 });
+
+/* ── 예금·적금 복리/단리 토글 ────────────────────────────────────────── */
+function bindModeToggle(containerId, setMode) {
+  document.querySelectorAll('#' + containerId + ' button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#' + containerId + ' button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setMode(btn.dataset.mode);
+      recomputeAll();
+    });
+  });
+}
+bindModeToggle('dep_modes', m => { depositMode = m; });
+bindModeToggle('sav_modes', m => { savingsMode = m; });
 
 /* ── 대출 상환방식 전환 ───────────────────────────────────────────────── */
 document.querySelectorAll('#tab-loan .subtabs button').forEach(btn => {
@@ -71,34 +87,34 @@ function renderTaxTable(prefix, tax) {
     </div>`;
 }
 
-/* ── 예금 ─────────────────────────────────────────────────────────────── */
+/* ── 예금 (복리/단리 토글) ────────────────────────────────────────────── */
+const DEP_DESC = {
+  compound: '목돈을 한 번에 맡기고 <b>월 복리</b>로 굴립니다. 세금 구간별 실수령액·물가 반영 현재가치까지 계산합니다. (엑셀 <code>FV</code> 함수)',
+  simple: '<b>연 단리</b>: 이자가 원금에만 붙습니다. <code>이자 = 원금 × 이자율 × 기간(년)</code>'
+};
 function renderDeposit() {
-  const dc = calcDepositCompound({ principal: val('dc_principal'), months: val('dc_months'), rate: valPct('dc_rate'), inflation: valPct('dc_inf') });
-  document.getElementById('dc_total').textContent = won(dc.total);
-  document.getElementById('dc_p').textContent = won(dc.principal);
-  document.getElementById('dc_i').textContent = won(dc.interest);
-  renderTaxTable('dc', dc.tax);
-
-  const ds = calcDepositSimple({ principal: val('ds_principal'), months: val('ds_months'), rate: valPct('ds_rate'), inflation: valPct('ds_inf') });
-  document.getElementById('ds_total').textContent = won(ds.total);
-  document.getElementById('ds_p').textContent = won(ds.principal);
-  document.getElementById('ds_i').textContent = won(ds.interest);
-  renderTaxTable('ds', ds.tax);
+  const args = { principal: val('dep_principal'), months: val('dep_months'), rate: valPct('dep_rate'), inflation: valPct('dep_inf') };
+  const r = depositMode === 'compound' ? calcDepositCompound(args) : calcDepositSimple(args);
+  document.getElementById('dep_desc').innerHTML = DEP_DESC[depositMode];
+  document.getElementById('dep_total').textContent = won(r.total);
+  document.getElementById('dep_p').textContent = won(r.principal);
+  document.getElementById('dep_i').textContent = won(r.interest);
+  renderTaxTable('dep', r.tax);
 }
 
-/* ── 적금 ─────────────────────────────────────────────────────────────── */
+/* ── 적금 (복리/단리 토글) ────────────────────────────────────────────── */
+const SAV_DESC = {
+  compound: '매월 일정액을 납입하고 <b>월 복리</b>로 굴립니다. (엑셀 <code>FV</code> 함수, 정기납입)',
+  simple: '<b>연 단리</b>: 매월 납입, 각 회차 납입금이 보유 기간만큼 단리 이자를 받습니다. (등차수열 합 공식)'
+};
 function renderSavings() {
-  const ic = calcInstallmentCompound({ monthly: val('ic_monthly'), months: val('ic_months'), rate: valPct('ic_rate'), inflation: valPct('ic_inf') });
-  document.getElementById('ic_total').textContent = won(ic.total);
-  document.getElementById('ic_d').textContent = won(ic.deposit);
-  document.getElementById('ic_i').textContent = won(ic.interest);
-  renderTaxTable('ic', ic.tax);
-
-  const is = calcInstallmentSimple({ monthly: val('is_monthly'), months: val('is_months'), rate: valPct('is_rate'), inflation: valPct('is_inf') });
-  document.getElementById('is_total').textContent = won(is.total);
-  document.getElementById('is_d').textContent = won(is.deposit);
-  document.getElementById('is_i').textContent = won(is.interest);
-  renderTaxTable('is', is.tax);
+  const args = { monthly: val('sav_monthly'), months: val('sav_months'), rate: valPct('sav_rate'), inflation: valPct('sav_inf') };
+  const r = savingsMode === 'compound' ? calcInstallmentCompound(args) : calcInstallmentSimple(args);
+  document.getElementById('sav_desc').innerHTML = SAV_DESC[savingsMode];
+  document.getElementById('sav_total').textContent = won(r.total);
+  document.getElementById('sav_d').textContent = won(r.deposit);
+  document.getElementById('sav_i').textContent = won(r.interest);
+  renderTaxTable('sav', r.tax);
 }
 
 /* ── 빠른 계산 (미래가치 / 현재가치 / 목돈모으기) ─────────────────────── */
